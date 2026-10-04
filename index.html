@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f4f9ff" />
+  <title>駅伝タイム計測 | Ekiden Timer</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="app-topbar hidden" id="appTopbar">
+      <button class="icon-button" id="homeBtn" aria-label="トップへ戻る">⌂</button>
+      <div>
+        <div class="topbar-title" id="topbarTitle">駅伝タイム計測</div>
+        <div class="topbar-subtitle" id="syncBadge">ローカル試作モード</div>
+      </div>
+      <button class="icon-button" id="menuBtn" aria-label="メニュー">☰</button>
+    </header>
+
+    <main>
+      <!-- TOP -->
+      <section id="screen-top" class="screen active screen-top" aria-labelledby="topTitle">
+        <div class="hero-card">
+          <div class="hero-logo-wrap">
+            <img src="assets/icon.svg" class="hero-logo" alt="タスキを受け渡すランナーのアイコン" />
+          </div>
+          <h1 id="topTitle">駅伝タイム計測</h1>
+          <p class="hero-en">Ekiden Timer</p>
+        </div>
+
+        <div class="role-buttons" aria-label="利用する画面を選択">
+          <button class="role-button admin" data-go="admin-login">
+            <span class="role-icon">⚙</span>
+            <span class="role-copy"><strong>管理者</strong><small>大会設定・登録・記録確認</small></span>
+            <span class="role-arrow">›</span>
+          </button>
+          <button class="role-button timer" data-go="timer-login">
+            <span class="role-icon">⏱</span>
+            <span class="role-copy"><strong>計測係</strong><small>通過記録の入力</small></span>
+            <span class="role-arrow">›</span>
+          </button>
+          <button class="role-button participant" data-go="participant">
+            <span class="role-icon">●●●</span>
+            <span class="role-copy"><strong>参加者・閲覧者</strong><small>リアルタイム順位・お知らせ</small></span>
+            <span class="role-arrow">›</span>
+          </button>
+        </div>
+
+        <div class="top-illustration" aria-hidden="true">
+          <svg viewBox="0 0 1000 260" preserveAspectRatio="xMidYMax slice">
+            <defs>
+              <linearGradient id="fadeSky" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+                <stop offset="1" stop-color="#d9ecfb" stop-opacity="1"/>
+              </linearGradient>
+            </defs>
+            <rect width="1000" height="260" fill="url(#fadeSky)"/>
+            <path d="M0 190 L120 125 215 170 330 98 460 165 590 120 715 175 840 112 1000 168 1000 260 0 260Z" fill="#c6e1f6"/>
+            <path d="M0 215 L165 160 295 203 420 150 565 214 700 170 835 213 1000 165 1000 260 0 260Z" fill="#afd5f1"/>
+            <g fill="#6d9ec6" opacity=".95">
+              <circle cx="860" cy="162" r="24"/><circle cx="890" cy="140" r="30"/><circle cx="925" cy="158" r="25"/>
+              <rect x="888" y="155" width="14" height="88" rx="6"/>
+              <path d="M900 165 C910 145 930 136 945 132 C934 151 932 166 944 184 C928 178 916 176 900 183Z"/>
+              <path d="M891 175 C875 153 854 149 842 145 C850 163 850 180 839 194 C858 186 871 184 892 194Z"/>
+            </g>
+            <g fill="#6b98be">
+              <circle cx="230" cy="188" r="10"/><path d="M223 199 l18 0 8 29 -10 0 -4-17 -4 17 -10 0 5-29Z"/>
+              <path d="M237 201 l18 13 -5 7 -17-9Z"/>
+              <circle cx="302" cy="179" r="10"/><path d="M295 190 l18 0 9 30 -10 0 -5-18 -4 18 -10 0 5-30Z"/>
+              <path d="M295 195 l-22 11 -4-7 21-12Z"/>
+              <circle cx="369" cy="191" r="9"/><path d="M362 201 l18 0 8 28 -9 0 -5-16 -5 16 -9 0 5-28Z"/>
+            </g>
+            <path d="M243 209 C255 206 266 201 278 202" stroke="#d96363" stroke-width="6" stroke-linecap="round" fill="none"/>
+          </svg>
+        </div>
+        <p class="tech-note">GitHub Pages + Firebase 対応設計</p>
+      </section>
+
+      <!-- LOGIN -->
+      <section id="screen-admin-login" class="screen auth-screen">
+        <div class="panel compact">
+          <h2>管理者ログイン</h2>
+          <p>第1試作ではデモPINを使用します。</p>
+          <label>PIN<input id="adminPin" inputmode="numeric" maxlength="8" placeholder="1234" /></label>
+          <button class="primary-btn" id="adminLoginBtn">ログイン</button>
+          <p class="hint">デモPIN：1234</p>
+        </div>
+      </section>
+
+      <section id="screen-timer-login" class="screen auth-screen">
+        <div class="panel compact">
+          <h2>計測係</h2>
+          <p>計測端末を識別します。3人とも全チームを計測できます。</p>
+          <div class="segmented" id="operatorSelector">
+            <button data-op="A">A</button><button data-op="B">B</button><button data-op="C">C</button>
+          </div>
+          <button class="primary-btn green" id="timerEnterBtn" disabled>計測画面へ</button>
+        </div>
+      </section>
+
+      <!-- ADMIN -->
+      <section id="screen-admin" class="screen admin-screen">
+        <div class="dashboard-grid">
+          <article class="panel status-panel">
+            <div class="panel-heading"><h2>大会状況</h2><span class="status-pill" id="raceStatusPill">開始前</span></div>
+            <div class="stat-row"><div><small>チーム数</small><strong id="adminTeamCount">0</strong></div><div><small>区間</small><strong>15</strong></div><div><small>正式通過記録</small><strong id="adminPassCount">0</strong></div></div>
+            <div class="action-row"><button class="primary-btn green" id="startRaceBtn">一斉スタート</button><button class="secondary-btn" id="finishRaceBtn">競技終了</button></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading"><h2>エントリーCSV</h2><span class="mini-badge">UTF-8</span></div>
+            <p>1行＝1区間の走者として登録します。同じ人が複数区間を走っても構いません。</p>
+            <div class="action-row wrap"><button class="secondary-btn" id="downloadCsvBtn">テンプレートCSV</button><label class="file-btn">CSVを読み込む<input type="file" id="csvInput" accept=".csv,text/csv" hidden /></label></div>
+            <div id="csvPreview" class="csv-preview empty">CSVを読み込むと、ここにプレビューを表示します。</div>
+            <button class="primary-btn" id="commitCsvBtn" disabled>Firebase用データとして登録</button>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading"><h2>参加者へのお知らせ</h2><span class="mini-badge live">LIVE</span></div>
+            <textarea id="noticeInput" rows="5">開会式は、体育館で10時からとなっています。参加者は、5分前にはお集まりください。</textarea>
+            <button class="primary-btn purple" id="saveNoticeBtn">お知らせを更新</button>
+          </article>
+
+          <article class="panel wide">
+            <div class="panel-heading"><h2>計測記録の確認・修正</h2><button class="text-btn" id="exportResultsBtn">結果CSV出力</button></div>
+            <div id="adminLog" class="table-wrap"></div>
+          </article>
+
+          <article class="panel wide danger-zone">
+            <div class="panel-heading"><h2>試作データ</h2></div>
+            <p>画面確認用の12チームを読み込むか、全データを初期化できます。</p>
+            <div class="action-row"><button class="secondary-btn" id="loadDemoBtn">デモ12チームを読込</button><button class="danger-btn" id="resetBtn">全データを初期化</button></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- TIMER -->
+      <section id="screen-timer" class="screen timer-screen">
+        <div class="timer-header-card">
+          <div><small id="operatorLabel">計測係 A</small><strong id="racePhaseLabel">開始前</strong></div>
+          <div class="elapsed" id="elapsedClock">00:00:00.00</div>
+        </div>
+        <div class="timer-note" id="timerNote">管理者が一斉スタートを押すと計測できます。</div>
+        <div id="teamButtons" class="team-buttons"></div>
+        <div class="timer-bottom-grid">
+          <article class="panel log-panel"><div class="panel-heading"><h2>最近の計測</h2><span id="operatorRecordCount">0件</span></div><div id="timerLog"></div></article>
+          <article class="panel"><div class="panel-heading"><h2>直前操作</h2></div><button class="danger-btn full" id="undoBtn" disabled>↶ 直前の記録を取消</button><p class="hint">同じチームを複数の計測係が押した場合、各計測値を保持します。</p></article>
+        </div>
+      </section>
+
+      <!-- PARTICIPANT -->
+      <section id="screen-participant" class="screen participant-screen">
+        <article class="panel ranking-panel">
+          <div class="ranking-head"><div><small>リアルタイム</small><h2>速報順位</h2></div><span class="refresh-dot">● LIVE</span></div>
+          <div id="rankingTable" class="ranking-table"></div>
+          <p class="provisional-note">※速報値です。正式結果は確認後に確定します。</p>
+        </article>
+        <article class="panel notice-panel">
+          <div class="notice-title">📣 お知らせ</div>
+          <div id="participantNotice" class="notice-message"></div>
+        </article>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script src="firebase-config.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

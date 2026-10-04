@@ -1,0 +1,9 @@
+{
+  "name":"駅伝タイム計測",
+  "short_name":"駅伝計測",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#eef6fc",
+  "theme_color":"#f4f9ff",
+  "icons":[{"src":"assets/icon.svg","sizes":"any","type":"image/svg+xml"}]
+}
