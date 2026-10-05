@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "ekidenTimerV02": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}
