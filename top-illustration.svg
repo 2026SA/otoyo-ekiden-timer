@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 280" role="img" aria-label="山並みと杉の大杉、タスキをつなぐランナーのイラスト">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#f7fbff"/>
+      <stop offset="100%" stop-color="#dcebfa"/>
+    </linearGradient>
+    <linearGradient id="road" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#d7dde7"/>
+      <stop offset="100%" stop-color="#c9d2dd"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1000" height="280" fill="url(#sky)"/>
+
+  <g opacity="0.9">
+    <path d="M0 175 L90 132 180 158 285 108 400 162 495 122 610 168 735 110 835 154 920 118 1000 150 1000 280 0 280 Z" fill="#d7e8f8"/>
+    <path d="M0 198 L130 154 250 190 360 145 495 204 620 158 760 210 880 165 1000 188 1000 280 0 280 Z" fill="#b8d6ef"/>
+    <path d="M0 220 L150 180 260 224 380 175 520 232 650 188 805 228 915 195 1000 210 1000 280 0 280 Z" fill="#9fc4e4"/>
+  </g>
+
+  <g>
+    <path d="M0 250 C130 242 180 250 260 242 C380 230 510 258 630 236 C760 212 870 230 1000 220 L1000 280 L0 280 Z" fill="#d7ead0"/>
+    <path d="M0 260 C130 248 220 270 325 252 C430 234 535 266 660 244 C820 216 910 245 1000 236 L1000 280 L0 280 Z" fill="#bfdcaf"/>
+  </g>
+
+  <g opacity="0.95">
+    <path d="M0 280 L0 246 C95 228 150 222 210 221 C310 219 418 243 498 243 C620 243 741 205 850 215 C915 220 960 235 1000 244 L1000 280 Z" fill="url(#road)"/>
+    <path d="M0 246 C95 228 150 222 210 221 C310 219 418 243 498 243 C620 243 741 205 850 215 C915 220 960 235 1000 244" fill="none" stroke="#ffffff" stroke-width="6" opacity="0.8"/>
+    <path d="M708 213 C770 210 836 217 903 229" fill="none" stroke="#8da0b3" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+  </g>
+
+  <g transform="translate(765,26)">
+    <g fill="#7fb08a">
+      <ellipse cx="84" cy="112" rx="50" ry="42"/>
+      <ellipse cx="62" cy="82" rx="42" ry="36"/>
+      <ellipse cx="102" cy="76" rx="46" ry="36"/>
+      <ellipse cx="133" cy="106" rx="38" ry="32"/>
+    </g>
+    <g fill="#5f8c67">
+      <ellipse cx="48" cy="122" rx="28" ry="23"/>
+      <ellipse cx="127" cy="136" rx="32" ry="24"/>
+    </g>
+    <path d="M78 128 C80 110 79 96 81 74 C82 58 88 48 96 41 C102 46 107 58 107 79 C107 95 106 109 108 127 L114 238 L71 238 Z" fill="#8f785b"/>
+    <path d="M91 47 C91 47 88 58 89 75 C89 99 91 122 87 141" stroke="#725a43" stroke-width="4" fill="none" opacity="0.35"/>
+    <path d="M83 142 C66 136 42 138 24 147" stroke="#7d654a" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M106 136 C127 127 149 128 166 136" stroke="#7d654a" stroke-width="8" stroke-linecap="round" fill="none"/>
+  </g>
+
+  <g opacity="0.6" stroke="#8da4b9" stroke-width="4" stroke-linecap="round">
+    <path d="M718 216 L725 201"/>
+    <path d="M742 215 L748 199"/>
+    <path d="M766 214 L773 197"/>
+    <path d="M790 214 L796 198"/>
+    <path d="M814 216 L820 199"/>
+    <path d="M838 219 L844 203"/>
+    <path d="M862 222 L868 207"/>
+  </g>
+
+  <g transform="translate(300,145)" fill="#6a98be">
+    <circle cx="0" cy="15" r="10"/>
+    <path d="M-8 26 h18 l7 28 h-10 l-3-15 -4 16 h-10 z"/>
+    <path d="M10 32 l20 14 -5 7 -18-10 z"/>
+    <path d="M-5 53 l-18 20 8 5 16-17 z"/>
+    <path d="M12 54 l16 20 -8 5 -15-18 z"/>
+  </g>
+  <g transform="translate(370,138) scale(0.98)" fill="#6a98be">
+    <circle cx="0" cy="15" r="10"/>
+    <path d="M-8 26 h18 l7 28 h-10 l-3-15 -4 16 h-10 z"/>
+    <path d="M-9 32 l-22 12 -4-7 20-12 z"/>
+    <path d="M-3 53 l-20 18 8 5 18-16 z"/>
+    <path d="M12 54 l14 20 -8 5 -13-18 z"/>
+  </g>
+  <path d="M309 178 C322 172 336 168 350 169" stroke="#d85b5b" stroke-width="7" stroke-linecap="round" fill="none"/>
+
+  <g transform="translate(114,182) scale(0.82)" fill="#7aa3c6" opacity="0.92">
+    <circle cx="0" cy="9" r="8"/>
+    <path d="M-7 18 h15 l6 23 h-8 l-3-12 -4 12 h-8 z"/>
+    <path d="M6 25 l15 11 -4 6 -14-8 z"/>
+    <path d="M-3 40 l-14 15 7 4 11-12 z"/>
+    <path d="M10 40 l12 16 -6 4 -10-13 z"/>
+  </g>
+  <g transform="translate(62,207) scale(0.72)" fill="#87afcf" opacity="0.75">
+    <circle cx="0" cy="9" r="8"/>
+    <path d="M-7 18 h15 l6 23 h-8 l-3-12 -4 12 h-8 z"/>
+    <path d="M6 25 l15 11 -4 6 -14-8 z"/>
+    <path d="M-3 40 l-14 15 7 4 11-12 z"/>
+    <path d="M10 40 l12 16 -6 4 -10-13 z"/>
+  </g>
+</svg>
