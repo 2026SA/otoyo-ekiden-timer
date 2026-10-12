@@ -13,10 +13,12 @@
 //   messagingSenderId: "...",
 //   appId: "..."
 // };
-window.EKIDEN_FIREBASE_CONFIG = null;
-
-// Realtime Database 内で使用する保存先。バスアプリと同じFirebaseを使う場合も
-// このパスを分けておけばデータが混ざりません。
-window.EKIDEN_APP_OPTIONS = {
-  rootPath: "ekidenTimerV02"
+window.EKIDEN_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBD1RRYN6T6aJaRRNeRZX4KhPJePIH7DNw",
+  authDomain: "otoyo-ekiden-timer.firebaseapp.com",
+  databaseURL: "https://otoyo-ekiden-timer-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  projectId: "otoyo-ekiden-timer",
+  storageBucket: "otoyo-ekiden-timer.firebasestorage.app",
+  messagingSenderId: "904817111477",
+  appId: "1:904817111477:web:b64b240e1967e6fc0769fc"
 };
