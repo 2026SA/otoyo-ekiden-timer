@@ -41,6 +41,14 @@
           </button>
         </div>
 
+        <div class="entry-cta-wrap">
+          <button class="entry-cta" data-go="entry">
+            <span class="entry-cta-icon">📝</span>
+            <span><strong>駅伝 参加申込</strong><small id="entryTopStatus">申込フォームはこちら</small></span>
+            <span class="role-arrow">›</span>
+          </button>
+        </div>
+
         <div class="top-illustration" aria-hidden="true">
           <svg viewBox="0 0 1000 260" preserveAspectRatio="xMidYMax slice">
             <defs><linearGradient id="fadeSky" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0"/><stop offset="1" stop-color="#d9ecfb" stop-opacity="1"/></linearGradient></defs>
@@ -53,6 +61,69 @@
           </svg>
         </div>
         <p class="tech-note">GitHub Pages + Firebase Realtime Database</p>
+      </section>
+
+      <!-- ENTRY -->
+      <section id="screen-entry" class="screen entry-screen">
+        <div class="panel entry-panel">
+          <div class="entry-heading">
+            <div>
+              <small class="eyebrow">駅伝チーム</small>
+              <h2 id="entryEventName">大豊学園駅伝大会 参加申込</h2>
+            </div>
+            <span class="status-pill running" id="entryOpenBadge">受付中</span>
+          </div>
+          <div id="entryClosedMessage" class="warning-box hidden"></div>
+          <div class="dev-warning">
+            <strong>開発版：</strong>現在はダミーデータでの動作確認用です。本番の個人情報を入力する前に、申込データを保護するFirebase認証・ルールへ切り替えます。
+          </div>
+          <form id="entryForm">
+            <fieldset>
+              <legend>チーム・代表者</legend>
+              <div class="form-grid two">
+                <label>チーム名 <span class="req">必須</span><input id="entryTeamName" required maxlength="60" placeholder="例：大豊スマイルズ" /></label>
+                <label>代表者氏名 <span class="req">必須</span><input id="entryRepName" required maxlength="60" placeholder="例：山田 太郎" /></label>
+                <label>代表者区分<select id="entryRepType"><option>参加者</option><option>保護者</option><option>地域・一般</option><option>学校関係者</option><option>その他</option></select></label>
+                <label>電話番号 <span class="req">必須</span><input id="entryPhone" required inputmode="tel" placeholder="090-1234-5678" /></label>
+                <label>連絡可能なメールアドレス<input id="entryEmail" type="email" inputmode="email" placeholder="example@example.com" /></label>
+                <label>FAX番号<input id="entryFax" inputmode="tel" placeholder="0887-xx-xxxx" /></label>
+                <label class="span-2">郵送先住所<input id="entryAddress" placeholder="〒..." /></label>
+                <label>希望する連絡方法<select id="entryContactPref"><option value="email">メール</option><option value="phone">電話</option><option value="fax">FAX</option><option value="postal">郵送</option><option value="student">大豊学園の児童生徒を通じて</option></select></label>
+                <label>大豊学園の児童生徒を通じて受取可能な場合<input id="entryStudentName" placeholder="児童生徒名・学年など（任意）" /></label>
+              </div>
+              <p class="form-note">※高知県教育委員会から配布されている児童生徒用Googleアカウントでは、メールを利用できない場合があります。大会事務局から連絡可能なメールアドレスをご記入ください。メールをお持ちでない場合は、電話・FAX・郵送・児童生徒経由を選択できます。</p>
+            </fieldset>
+
+            <fieldset>
+              <div class="fieldset-head"><legend>15区間の走者</legend><span>同じ方が複数区間を走っても構いません。</span></div>
+              <div class="runner-entry-table-wrap">
+                <table class="runner-entry-table">
+                  <thead><tr><th>区間</th><th>氏名</th><th>性別</th><th>区分</th><th>年齢</th></tr></thead>
+                  <tbody id="entryRunnerRows"></tbody>
+                </table>
+              </div>
+              <div class="runner-tools"><button type="button" class="secondary-btn" id="copyPrevRunnerBtn">直前の走者を次の空欄へコピー</button><button type="button" class="secondary-btn" id="fillDemoEntryBtn">ダミー入力</button></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>備考</legend>
+              <label>事務局に伝えておきたいこと<textarea id="entryNotes" rows="4" placeholder="連絡方法、選手変更の可能性など"></textarea></label>
+            </fieldset>
+            <label class="agree-line"><input id="entryAgree" type="checkbox" required /> 入力内容を確認し、大会運営のために利用されることに同意します。</label>
+            <button class="primary-btn full entry-submit" type="submit" id="entrySubmitBtn">この内容で申し込む</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="screen-entry-complete" class="screen auth-screen">
+        <div class="panel compact complete-card">
+          <div class="complete-mark">✓</div>
+          <h2>申込を受け付けました</h2>
+          <p id="entryCompleteText">申込内容を大会事務局で確認します。</p>
+          <div class="receipt-box"><small>受付番号</small><strong id="entryReceiptNo">---</strong></div>
+          <p class="hint">承認後、チーム番号・チーム用アクセスコードを大会事務局から案内します。</p>
+          <button class="primary-btn full" data-go="top">トップへ戻る</button>
+        </div>
       </section>
 
       <!-- ADMIN LOGIN -->
@@ -120,6 +191,38 @@
               <label>計測C<input id="newOpCCode" type="password" inputmode="numeric" placeholder="新しいコード" /></label>
             </div>
             <button class="primary-btn" id="saveAccessCodesBtn">アクセスコードを更新</button>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading"><h2>大会・申込設定</h2><span class="mini-badge">運営</span></div>
+            <div class="form-grid two admin-form-grid">
+              <label>大会名<input id="settingEventName" /></label>
+              <label>開催日<input id="settingEventDate" type="date" /></label>
+              <label>会場<input id="settingVenue" /></label>
+              <label>事務局連絡先<input id="settingContact" /></label>
+            </div>
+            <label class="toggle-line"><input type="checkbox" id="settingEntryOpen" /> 駅伝の参加申込を受け付ける</label>
+            <button class="primary-btn" id="saveEventSettingsBtn">大会設定を保存</button>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading"><h2>参加申込QR</h2><span class="mini-badge">広報</span></div>
+            <p>申込ページへ直接開くQRコードです。PNG保存してCanva等の募集ポスターに利用できます。</p>
+            <div class="qr-box"><div id="entryQrBox" aria-label="参加申込QRコード"></div></div>
+            <div class="action-row wrap"><button class="secondary-btn" id="refreshQrBtn">QRを更新</button><button class="primary-btn" id="downloadQrBtn">PNG保存</button></div>
+            <div class="copy-url" id="entryUrlText"></div>
+          </article>
+
+          <article class="panel wide">
+            <div class="panel-heading"><h2>申込一覧</h2><div class="action-row wrap"><button class="secondary-btn" id="loadDemoApplicationsBtn">ダミー申込を追加</button><button class="text-btn" id="exportApplicationsBtn">申込CSV出力</button></div></div>
+            <div class="application-stats" id="applicationStats"></div>
+            <div id="applicationList" class="table-wrap"></div>
+          </article>
+
+          <article class="panel wide">
+            <div class="panel-heading"><h2>登録チーム管理</h2><span class="mini-badge">承認後</span></div>
+            <p class="hint">申込を承認するとチーム番号と6桁のアクセスコードを自動発行します。CSV登録チームもここに表示されます。</p>
+            <div id="teamManagementList" class="table-wrap"></div>
           </article>
 
           <article class="panel">
@@ -211,6 +314,7 @@
   </div>
 
   <script src="firebase-config.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script type="module" src="app.js"></script>
 </body>
 </html>
