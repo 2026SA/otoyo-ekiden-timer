@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f4f9ff" />
   <title>駅伝タイム計測 | Ekiden Timer</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+  <link rel="icon" href="assets/icon-192.png" type="image/png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -24,9 +24,10 @@
       <!-- TOP -->
       <section id="screen-top" class="screen active screen-top" aria-labelledby="topTitle">
         <div class="hero-card">
-          <div class="hero-logo-wrap"><img src="assets/icon.svg" class="hero-logo" alt="タスキを受け渡すランナーのアイコン" /></div>
-          <h1 id="topTitle">駅伝タイム計測</h1>
+          <div class="hero-logo-wrap"><img src="assets/logo-kanji.png" class="hero-logo hero-wordmark" alt="駅伝 ロゴ" /></div>
+          <h1 id="topTitle" class="top-title-hidden">駅伝タイム計測</h1>
           <p class="hero-en">Ekiden Timer</p>
+          <p class="hero-subcopy">大会運営・計測・お知らせをひとつに。</p>
         </div>
 
         <div class="role-buttons" aria-label="利用する画面を選択">
@@ -37,7 +38,7 @@
             <span class="role-icon">⏱</span><span class="role-copy"><strong>計測係</strong><small>運営計測・チーム参考計測</small></span><span class="role-arrow">›</span>
           </button>
           <button class="role-button participant" data-go="participant">
-            <span class="role-icon">●●●</span><span class="role-copy"><strong>参加者・閲覧者</strong><small>リアルタイム順位・お知らせ</small></span><span class="role-arrow">›</span>
+            <span class="role-icon image-icon"><img src="assets/participant-icon.png" alt="" /></span><span class="role-copy"><strong>参加者・閲覧者</strong><small>リアルタイム順位・お知らせ</small></span><span class="role-arrow">›</span>
           </button>
         </div>
 
@@ -48,17 +49,12 @@
             <span class="role-arrow">›</span>
           </button>
         </div>
-
-        <div class="top-illustration" aria-hidden="true">
-          <svg viewBox="0 0 1000 260" preserveAspectRatio="xMidYMax slice">
-            <defs><linearGradient id="fadeSky" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0"/><stop offset="1" stop-color="#d9ecfb" stop-opacity="1"/></linearGradient></defs>
-            <rect width="1000" height="260" fill="url(#fadeSky)"/>
-            <path d="M0 190 L120 125 215 170 330 98 460 165 590 120 715 175 840 112 1000 168 1000 260 0 260Z" fill="#c6e1f6"/>
-            <path d="M0 215 L165 160 295 203 420 150 565 214 700 170 835 213 1000 165 1000 260 0 260Z" fill="#afd5f1"/>
-            <g fill="#6d9ec6" opacity=".95"><circle cx="860" cy="162" r="24"/><circle cx="890" cy="140" r="30"/><circle cx="925" cy="158" r="25"/><rect x="888" y="155" width="14" height="88" rx="6"/><path d="M900 165 C910 145 930 136 945 132 C934 151 932 166 944 184 C928 178 916 176 900 183Z"/><path d="M891 175 C875 153 854 149 842 145 C850 163 850 180 839 194 C858 186 871 184 892 194Z"/></g>
-            <g fill="#6b98be"><circle cx="230" cy="188" r="10"/><path d="M223 199 l18 0 8 29 -10 0 -4-17 -4 17 -10 0 5-29Z"/><path d="M237 201 l18 13 -5 7 -17-9Z"/><circle cx="302" cy="179" r="10"/><path d="M295 190 l18 0 9 30 -10 0 -5-18 -4 18 -10 0 5-30Z"/><path d="M295 195 l-22 11 -4-7 21-12Z"/><circle cx="369" cy="191" r="9"/><path d="M362 201 l18 0 8 28 -9 0 -5-16 -5 16 -9 0 5-28Z"/></g>
-            <path d="M243 209 C255 206 266 201 278 202" stroke="#d96363" stroke-width="6" stroke-linecap="round" fill="none"/>
-          </svg>
+        <div class="top-surface" aria-hidden="true">
+          <span class="surface-orb orb-a"></span>
+          <span class="surface-orb orb-b"></span>
+          <span class="surface-line line-a"></span>
+          <span class="surface-line line-b"></span>
+          <span class="surface-grid"></span>
         </div>
         <p class="tech-note">GitHub Pages + Firebase Realtime Database</p>
       </section>
@@ -233,10 +229,21 @@
             <button class="primary-btn" id="commitCsvBtn" disabled>チームデータとして登録</button>
           </article>
 
-          <article class="panel">
-            <div class="panel-heading"><h2>参加者へのお知らせ</h2><span class="mini-badge live">LIVE</span></div>
-            <textarea id="noticeInput" rows="5">開会式は、体育館で10時からとなっています。参加者は、5分前にはお集まりください。</textarea>
-            <button class="primary-btn purple" id="saveNoticeBtn">お知らせを更新</button>
+          <article class="panel wide">
+            <div class="panel-heading"><h2>お知らせ掲示板</h2><span class="mini-badge live">LIVE</span></div>
+            <p class="hint">参加者・閲覧者画面へリアルタイム反映されます。重要連絡は固定表示できます。</p>
+            <div class="notice-admin-grid">
+              <label>見出し<input id="noticeTitleInput" maxlength="60" placeholder="例：開会式について" /></label>
+              <label>対象<select id="noticeAudienceInput"><option value="all">全体</option><option value="participants">参加者向け</option><option value="ekiden">駅伝参加チーム</option><option value="funrun">ファンラン</option></select></label>
+              <label>表示種別<select id="noticePriorityInput"><option value="important">重要</option><option value="normal">通常</option></select></label>
+              <label class="toggle-line compact-toggle"><input type="checkbox" id="noticePinInput" /> 上部に固定</label>
+              <label class="span-all">本文<textarea id="noticeBodyInput" rows="4" placeholder="例：開会式は体育館で10時からです。参加者は5分前にはお集まりください。">開会式は、体育館で10時からとなっています。参加者は、5分前にはお集まりください。</textarea></label>
+            </div>
+            <div class="action-row wrap">
+              <button class="primary-btn purple" id="saveNoticeBtn">掲示板に投稿</button>
+              <button class="secondary-btn" id="clearNoticeFormBtn">入力クリア</button>
+            </div>
+            <div id="noticeBoardAdmin" class="notice-board-admin"></div>
           </article>
 
           <article class="panel">
@@ -306,7 +313,7 @@
           <div id="rankingTable" class="ranking-table"></div>
           <p class="provisional-note">※速報値です。正式結果は記録確認後に確定します。</p>
         </article>
-        <article class="panel notice-panel"><div class="notice-title">📣 お知らせ</div><div id="participantNotice" class="notice-message"></div></article>
+        <article class="panel notice-panel"><div class="notice-title">📣 お知らせ掲示板</div><div id="participantNoticeBoard" class="notice-board participant"></div></article>
       </section>
     </main>
 

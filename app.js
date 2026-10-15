@@ -26,7 +26,7 @@ let pendingQueue = loadQueue();
 
 function freshState(){
   return {
-    meta:{ raceStatus:'before', startAt:null, finishAt:null, notice:DEFAULT_NOTICE, version:3 },
+    meta:{ raceStatus:'before', startAt:null, finishAt:null, notice:DEFAULT_NOTICE, version:4 },
     settings:{ eventName:'大豊学園駅伝大会', eventDate:'', venue:'大豊学園', contact:'大会事務局', entryOpen:true },
     applications:{},
     teams:{},
@@ -35,7 +35,8 @@ function freshState(){
     adoptions:{},
     overrides:{},
     credentials:{ adminHash:'', operatorHashes:{} },
-    locks:{ operators:{}, teams:{} }
+    locks:{ operators:{}, teams:{} },
+    notices:{}
   };
 }
 function normalizeState(raw){
@@ -51,7 +52,8 @@ function normalizeState(raw){
     adoptions:r.adoptions||{},
     overrides:r.overrides||{},
     credentials:{...f.credentials,...(r.credentials||{}),operatorHashes:{...(r.credentials?.operatorHashes||{})}},
-    locks:{operators:{...(r.locks?.operators||{})},teams:{...(r.locks?.teams||{})}}
+    locks:{operators:{...(r.locks?.operators||{})},teams:{...(r.locks?.teams||{})}},
+    notices:r.notices||{}
   };
 }
 function loadLocalState(){
@@ -97,6 +99,43 @@ function naturalCompare(a,b){return String(a).localeCompare(String(b),'ja',{nume
 function getTeam(no){return state.teams[teamKey(no)]||teamList().find(t=>String(t.teamNo)===String(no));}
 function statusLabel(){return state.meta.raceStatus==='running'?'計測中':state.meta.raceStatus==='finished'?'終了':'開始前';}
 function runnerFor(teamNo,leg){const t=getTeam(teamNo);return t?.runners?.find(r=>Number(r.leg)===Number(leg));}
+
+function audienceLabel(v){return ({all:'全体',participants:'参加者向け',ekiden:'駅伝参加チーム',funrun:'ファンラン'})[v]||'全体';}
+function priorityLabel(v){return v==='important'?'重要':'通常';}
+function fmtNoticeTime(ts){if(!ts)return '';const d=new Date(ts);return d.toLocaleString('ja-JP',{hour12:false,month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+function noticeList(includeHidden=false){
+  const arr=Object.values(state.notices||{}).filter(Boolean);
+  const visible=arr.filter(n=>includeHidden || n.visible!==false);
+  if(!visible.length&&state.meta.notice){
+    return [{id:'legacy_notice',title:'大会からのお知らせ',body:state.meta.notice,audience:'all',priority:'important',pinned:true,visible:true,createdAt:state.meta.startAt||0,updatedAt:state.meta.startAt||0,legacy:true}];
+  }
+  return visible.sort((a,b)=>(Number(!!b.pinned)-Number(!!a.pinned))||((b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0)));
+}
+function clearNoticeForm(){
+  const ti=document.getElementById('noticeTitleInput'),bi=document.getElementById('noticeBodyInput'),ai=document.getElementById('noticeAudienceInput'),pi=document.getElementById('noticePriorityInput'),fi=document.getElementById('noticePinInput');
+  if(ti)ti.value=''; if(bi)bi.value=''; if(ai)ai.value='all'; if(pi)pi.value='important'; if(fi)fi.checked=false;
+}
+function createNoticeFromForm(){
+  const title=document.getElementById('noticeTitleInput')?.value.trim()||'大会からのお知らせ';
+  const body=document.getElementById('noticeBodyInput')?.value.trim()||'';
+  if(!body){toast('本文を入力してください');return null;}
+  return {id:makeId('notice'),title,body,audience:document.getElementById('noticeAudienceInput')?.value||'all',priority:document.getElementById('noticePriorityInput')?.value||'important',pinned:!!document.getElementById('noticePinInput')?.checked,visible:true,createdAt:syncedNow(),updatedAt:syncedNow()};
+}
+function renderNoticeBoardAdmin(){
+  const el=document.getElementById('noticeBoardAdmin'); if(!el)return;
+  const rows=noticeList(true);
+  if(!rows.length){el.innerHTML='<div class="notice-empty">まだ掲示板の投稿はありません。</div>';return;}
+  el.innerHTML=rows.map(n=>`<div class="notice-card ${n.pinned?'pinned':''} ${n.visible===false?'hidden-notice':''}"><div class="notice-card-head"><div><div class="notice-card-title">${esc(n.title||'大会からのお知らせ')}</div><div class="notice-tags"><span class="notice-tag audience">${esc(audienceLabel(n.audience))}</span><span class="notice-tag ${n.priority==='important'?'important':''}">${esc(priorityLabel(n.priority))}</span>${n.pinned?'<span class="notice-tag pinned">固定表示</span>':''}${n.visible===false?'<span class="notice-tag hidden">非公開</span>':''}</div></div><div class="notice-card-meta">${esc(fmtNoticeTime(n.updatedAt||n.createdAt))}</div></div><div class="notice-body">${esc(n.body||'').replace(/\n/g,'<br>')}</div><div class="notice-actions">${n.legacy?'':`<button class="tiny-btn" data-toggle-notice="${esc(n.id)}">${n.visible===false?'公開する':'非公開にする'}</button> <button class="tiny-btn" data-pin-notice="${esc(n.id)}">${n.pinned?'固定解除':'上部に固定'}</button> <button class="tiny-btn red" data-delete-notice="${esc(n.id)}">削除</button>`}</div></div>`).join('');
+  el.querySelectorAll('[data-toggle-notice]').forEach(b=>b.addEventListener('click',()=>{const n=state.notices?.[b.dataset.toggleNotice];if(!n)return;queueWrite(`notices/${n.id}`,{...n,visible:n.visible===false?true:false,updatedAt:syncedNow()});toast(n.visible===false?'お知らせを公開しました':'お知らせを非公開にしました');}));
+  el.querySelectorAll('[data-pin-notice]').forEach(b=>b.addEventListener('click',()=>{const n=state.notices?.[b.dataset.pinNotice];if(!n)return;queueWrite(`notices/${n.id}`,{...n,pinned:!n.pinned,updatedAt:syncedNow()});toast(!n.pinned?'上部に固定しました':'固定を解除しました');}));
+  el.querySelectorAll('[data-delete-notice]').forEach(b=>b.addEventListener('click',()=>{const n=state.notices?.[b.dataset.deleteNotice];if(!n)return;if(confirm('このお知らせを削除しますか？')){queueWrite(`notices/${n.id}`,null,true);toast('お知らせを削除しました');}}));
+}
+function renderParticipantNotices(){
+  const el=document.getElementById('participantNoticeBoard'); if(!el)return;
+  const rows=noticeList(false).filter(n=>n.visible!==false);
+  if(!rows.length){el.innerHTML='<div class="notice-empty">現在、お知らせはありません。</div>';return;}
+  el.innerHTML=rows.map(n=>`<div class="notice-card ${n.pinned?'pinned':''}"><div class="notice-card-head"><div><div class="notice-card-title">${esc(n.title||'大会からのお知らせ')}</div><div class="notice-tags"><span class="notice-tag audience">${esc(audienceLabel(n.audience))}</span><span class="notice-tag ${n.priority==='important'?'important':''}">${esc(priorityLabel(n.priority))}</span>${n.pinned?'<span class="notice-tag pinned">固定</span>':''}</div></div><div class="notice-card-meta">${esc(fmtNoticeTime(n.updatedAt||n.createdAt))}</div></div><div class="notice-body">${esc(n.body||'').replace(/\n/g,'<br>')}</div></div>`).join('');
+}
 
 async function sha256(text){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(String(text))); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -435,16 +474,17 @@ document.getElementById('exportApplicationsBtn').addEventListener('click',()=>{
 function renderAdmin(){
   const passes=computedPasses();document.getElementById('adminTeamCount').textContent=teamList().length;document.getElementById('adminPassCount').textContent=passes.length;
   const pill=document.getElementById('raceStatusPill');pill.textContent=statusLabel();pill.className='status-pill '+(state.meta.raceStatus==='running'?'running':state.meta.raceStatus==='finished'?'finished':'');
-  document.getElementById('noticeInput').value=state.meta.notice||'';document.getElementById('startRaceBtn').disabled=state.meta.raceStatus==='running';document.getElementById('finishRaceBtn').disabled=state.meta.raceStatus!=='running';
+  document.getElementById('startRaceBtn').disabled=state.meta.raceStatus==='running';document.getElementById('finishRaceBtn').disabled=state.meta.raceStatus!=='running';
   renderEventSettings();renderEntryQr();renderApplications();renderTeamManagement();
-  renderTeamCodes();renderAdminPassLog();renderRawOfficialLog();renderTeamBackupLog();renderSyncStatus();
+  renderTeamCodes();renderAdminPassLog();renderRawOfficialLog();renderTeamBackupLog();renderNoticeBoardAdmin();renderSyncStatus();
 }
 document.getElementById('startRaceBtn').addEventListener('click',()=>{
   if(!teamList().length&&!confirm('チーム登録がありません。このまま開始しますか？'))return;if(!confirm('全チーム一斉スタートとして計測を開始します。よろしいですか？'))return;
   queueWrite('meta',{...state.meta,raceStatus:'running',startAt:syncedNow(),finishAt:null});toast('一斉スタートしました');
 });
 document.getElementById('finishRaceBtn').addEventListener('click',()=>{queueWrite('meta',{...state.meta,raceStatus:'finished',finishAt:syncedNow()});toast('競技終了にしました');});
-document.getElementById('saveNoticeBtn').addEventListener('click',()=>{queueWrite('meta/notice',document.getElementById('noticeInput').value.trim());toast('お知らせを更新しました');});
+document.getElementById('saveNoticeBtn').addEventListener('click',()=>{const notice=createNoticeFromForm(); if(!notice)return; queueWrite(`notices/${notice.id}`,notice); queueWrite('meta/notice',notice.body); toast('掲示板に投稿しました'); clearNoticeForm();});
+document.getElementById('clearNoticeFormBtn').addEventListener('click',()=>clearNoticeForm());
 document.getElementById('saveAccessCodesBtn').addEventListener('click',async()=>{
   const a=document.getElementById('newAdminCode').value.trim(),A=document.getElementById('newOpACode').value.trim(),B=document.getElementById('newOpBCode').value.trim(),C=document.getElementById('newOpCCode').value.trim();
   const cred=structuredClone(state.credentials||{adminHash:'',operatorHashes:{}});cred.operatorHashes=cred.operatorHashes||{};
@@ -525,14 +565,14 @@ document.getElementById('teamLogoutBtn').addEventListener('click',async()=>{awai
 
 // ---------- Participant ----------
 function renderParticipant(){
-  document.getElementById('participantNotice').textContent=state.meta.notice||'現在、お知らせはありません。';const ranking=teamList().map(t=>({team:t,legs:teamProgress(t.teamNo),total:teamTotal(t.teamNo)})).sort((a,b)=>b.legs-a.legs||((a.total??Infinity)-(b.total??Infinity))||naturalCompare(a.team.teamNo,b.team.teamNo));const el=document.getElementById('rankingTable');if(!ranking.length){el.innerHTML='<div class="empty-state">まだチームが登録されていません。</div>';return;}el.innerHTML=ranking.map((r,i)=>`<div class="rank-row"><div class="rank-num">${i+1}位</div><div><div class="rank-team">${esc(r.team.teamName)}</div><div class="rank-meta">チーム ${esc(r.team.teamNo)}</div></div><div class="rank-meta">${r.legs===0?'未通過':r.legs>=15?'FINISH':`第${r.legs}区間`}</div><div class="rank-time">${r.total!=null?fmtClock(r.total):'--:--'}</div></div>`).join('');
+  renderParticipantNotices();const ranking=teamList().map(t=>({team:t,legs:teamProgress(t.teamNo),total:teamTotal(t.teamNo)})).sort((a,b)=>b.legs-a.legs||((a.total??Infinity)-(b.total??Infinity))||naturalCompare(a.team.teamNo,b.team.teamNo));const el=document.getElementById('rankingTable');if(!ranking.length){el.innerHTML='<div class="empty-state">まだチームが登録されていません。</div>';return;}el.innerHTML=ranking.map((r,i)=>`<div class="rank-row"><div class="rank-num">${i+1}位</div><div><div class="rank-team">${esc(r.team.teamName)}</div><div class="rank-meta">チーム ${esc(r.team.teamNo)}</div></div><div class="rank-meta">${r.legs===0?'未通過':r.legs>=15?'FINISH':`第${r.legs}区間`}</div><div class="rank-time">${r.total!=null?fmtClock(r.total):'--:--'}</div></div>`).join('');
 }
 
 // ---------- Demo / reset / export ----------
 const demoNames=['大豊A','大杉A','豊永A','清流A','北山A','南風A','桜丘A','みどりA','希望A','つばさA','大豊B','大杉B'];
 function demoTeams(){const obj={};demoNames.forEach((name,i)=>{const no=String(i+1);obj[teamKey(no)]={teamNo:no,teamName:name,accessCode:String(1001+i),runners:Array.from({length:15},(_,j)=>({name:`選手${j+1}`,sex:j%2?'女':'男',ageGroup:j%3===0?'小学生':j%3===1?'中学生':'一般',leg:j+1}))};});return obj;}
 document.getElementById('loadDemoBtn').addEventListener('click',()=>{if(!confirm('デモ12チームを読み込み、現在の計測データを初期化しますか？'))return;queueWrite('teams',demoTeams());clearRaceMeasurements();toast('デモ12チームを読み込みました');});
-document.getElementById('resetBtn').addEventListener('click',()=>{if(!confirm('申込・チーム・計測記録・設定をすべて初期化します。よろしいですか？'))return;const f=freshState();['meta','settings','applications','teams','officialMeasurements','teamMeasurements','adoptions','overrides','credentials','locks'].forEach(k=>queueWrite(k,f[k]));toast('初期化しました');});
+document.getElementById('resetBtn').addEventListener('click',()=>{if(!confirm('申込・チーム・計測記録・設定をすべて初期化します。よろしいですか？'))return;const f=freshState();['meta','settings','applications','teams','officialMeasurements','teamMeasurements','adoptions','overrides','credentials','locks','notices'].forEach(k=>queueWrite(k,f[k]));toast('初期化しました');});
 document.getElementById('exportResultsBtn').addEventListener('click',()=>{
   const out=[['team_no','team_name','leg','runner_name','sex','age_group','lap_time','total_time','source']];computedPasses().sort((a,b)=>naturalCompare(a.teamNo,b.teamNo)||a.leg-b.leg).forEach(p=>{const r=runnerFor(p.teamNo,p.leg)||{};out.push([p.teamNo,p.teamName,p.leg,r.name||'',r.sex||'',r.ageGroup||'',fmtClock(lapTime(p)),fmtClock(p.officialAt-state.meta.startAt),p.source]);});downloadText('\uFEFF'+out.map(r=>r.map(csvEscape).join(',')).join('\r\n'),'ekiden_results_v02.csv','text/csv;charset=utf-8');
 });
