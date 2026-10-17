@@ -26,8 +26,8 @@ let pendingQueue = loadQueue();
 
 function freshState(){
   return {
-    meta:{ raceStatus:'before', startAt:null, finishAt:null, notice:DEFAULT_NOTICE, version:4 },
-    settings:{ eventName:'大豊学園駅伝大会', eventDate:'', venue:'大豊学園', contact:'大会事務局', entryOpen:true },
+    meta:{ raceStatus:'before', startAt:null, finishAt:null, notice:DEFAULT_NOTICE, version:5 },
+    settings:{ eventName:'大豊学園駅伝大会', eventDate:'', entryDeadline:'', venue:'大豊学園', contact:'大会事務局', entryOpen:true },
     applications:{},
     teams:{},
     officialMeasurements:{},
@@ -324,9 +324,40 @@ function lapTime(pass){if(!pass||!state.meta.startAt)return null;const prev=pass
 const AGE_GROUPS=['未就学','小学生','中学生','高校生','一般','40代','50代','60代以上'];
 let lastReceiptId='';
 
+function localDayNumber(dateLike){
+  if(!dateLike)return null;
+  const parts=String(dateLike).split('-').map(Number); if(parts.length!==3||parts.some(Number.isNaN))return null;
+  return Math.floor(Date.UTC(parts[0],parts[1]-1,parts[2])/86400000);
+}
+function todayDayNumber(){const d=new Date();return Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);}
+function daysUntil(dateLike){const n=localDayNumber(dateLike);return n==null?null:n-todayDayNumber();}
+function formatShortDate(dateLike){if(!dateLike)return '';const p=String(dateLike).split('-').map(Number);if(p.length!==3)return '';return `${p[0]}年${p[1]}月${p[2]}日`;}
+function entryIsOpenNow(){if(!state.settings?.entryOpen)return false;const d=daysUntil(state.settings?.entryDeadline);return d==null||d>=0;}
+function countdownText(days,kind){
+  if(days==null)return kind==='event'?'日程未設定':'締切未設定';
+  if(kind==='event')return days>0?`あと ${days}日`:days===0?'本日開催':'開催済み';
+  return days>0?`あと ${days}日`:days===0?'本日締切':'受付終了';
+}
+function renderTopImportantNotices(){
+  const sec=document.getElementById('topImportantSection'),el=document.getElementById('topImportantNotices'); if(!sec||!el)return;
+  const rows=noticeList(false).filter(n=>n.visible!==false&&n.priority==='important').slice(0,3);
+  sec.classList.toggle('hidden',!rows.length);
+  if(!rows.length){el.innerHTML='';return;}
+  el.innerHTML=rows.map(n=>`<div class="top-important-item"><div class="top-important-item-head"><span>${esc(n.title||'重要なお知らせ')}</span>${n.pinned?'<em>固定</em>':''}</div><p>${esc(n.body||'').replace(/\n/g,'<br>')}</p></div>`).join('');
+}
+
 function renderTopStatus(){
+  const cfg=state.settings||{},open=entryIsOpenNow();
   const el=document.getElementById('entryTopStatus');
-  if(el)el.textContent=state.settings?.entryOpen?'申込受付中・フォームはこちら':'現在、申込受付は停止中です';
+  if(el)el.textContent=open?'申込受付中・フォームはこちら':'現在、申込受付は終了しています';
+  const eventDays=daysUntil(cfg.eventDate),entryDays=daysUntil(cfg.entryDeadline);
+  const eventEl=document.getElementById('eventCountdown'),entryEl=document.getElementById('entryCountdown');
+  const eventDateEl=document.getElementById('eventDateLabel'),entryDateEl=document.getElementById('entryDeadlineLabel');
+  if(eventEl)eventEl.textContent=countdownText(eventDays,'event');
+  if(entryEl)entryEl.textContent=cfg.entryOpen?countdownText(entryDays,'entry'):'受付停止中';
+  if(eventDateEl)eventDateEl.textContent=cfg.eventDate?formatShortDate(cfg.eventDate):'';
+  if(entryDateEl)entryDateEl.textContent=cfg.entryDeadline?formatShortDate(cfg.entryDeadline):'';
+  renderTopImportantNotices();
 }
 function initEntryRows(){
   const body=document.getElementById('entryRunnerRows'); if(!body||body.children.length)return;
@@ -338,7 +369,7 @@ function renderEntry(){
   initEntryRows();
   const cfg=state.settings||{};
   document.getElementById('entryEventName').textContent=`${cfg.eventName||'大豊学園駅伝大会'} 参加申込`;
-  const open=!!cfg.entryOpen,badge=document.getElementById('entryOpenBadge'),closed=document.getElementById('entryClosedMessage'),btn=document.getElementById('entrySubmitBtn');
+  const open=entryIsOpenNow(),badge=document.getElementById('entryOpenBadge'),closed=document.getElementById('entryClosedMessage'),btn=document.getElementById('entrySubmitBtn');
   badge.textContent=open?'受付中':'受付停止中';badge.className='status-pill '+(open?'running':'finished');
   closed.classList.toggle('hidden',open);closed.textContent=open?'':`現在、駅伝の参加申込は受け付けていません。${cfg.contact?` お問い合わせ：${cfg.contact}`:''}`;
   btn.disabled=!open;
@@ -389,7 +420,7 @@ initEntryRows();
 document.getElementById('fillDemoEntryBtn').addEventListener('click',fillDemoEntry);
 document.getElementById('copyPrevRunnerBtn').addEventListener('click',copyPrevRunner);
 document.getElementById('entryForm').addEventListener('submit',e=>{
-  e.preventDefault(); if(!state.settings?.entryOpen){toast('現在、申込受付は停止中です');return;}
+  e.preventDefault(); if(!entryIsOpenNow()){toast('現在、申込受付は終了しています');return;}
   const contact={
     repName:document.getElementById('entryRepName').value.trim(),repType:document.getElementById('entryRepType').value,
     phone:document.getElementById('entryPhone').value.trim(),email:document.getElementById('entryEmail').value.trim(),fax:document.getElementById('entryFax').value.trim(),
@@ -407,10 +438,10 @@ document.getElementById('entryForm').addEventListener('submit',e=>{
 
 function renderEventSettings(){
   const x=state.settings||{};
-  document.getElementById('settingEventName').value=x.eventName||'';document.getElementById('settingEventDate').value=x.eventDate||'';document.getElementById('settingVenue').value=x.venue||'';document.getElementById('settingContact').value=x.contact||'';document.getElementById('settingEntryOpen').checked=!!x.entryOpen;
+  document.getElementById('settingEventName').value=x.eventName||'';document.getElementById('settingEventDate').value=x.eventDate||'';document.getElementById('settingEntryDeadline').value=x.entryDeadline||'';document.getElementById('settingVenue').value=x.venue||'';document.getElementById('settingContact').value=x.contact||'';document.getElementById('settingEntryOpen').checked=!!x.entryOpen;
 }
 document.getElementById('saveEventSettingsBtn').addEventListener('click',()=>{
-  const x={eventName:document.getElementById('settingEventName').value.trim()||'大豊学園駅伝大会',eventDate:document.getElementById('settingEventDate').value,venue:document.getElementById('settingVenue').value.trim(),contact:document.getElementById('settingContact').value.trim(),entryOpen:document.getElementById('settingEntryOpen').checked};
+  const x={eventName:document.getElementById('settingEventName').value.trim()||'大豊学園駅伝大会',eventDate:document.getElementById('settingEventDate').value,entryDeadline:document.getElementById('settingEntryDeadline').value,venue:document.getElementById('settingVenue').value.trim(),contact:document.getElementById('settingContact').value.trim(),entryOpen:document.getElementById('settingEntryOpen').checked};
   queueWrite('settings',x);toast('大会・申込設定を保存しました');
 });
 

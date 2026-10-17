@@ -26,8 +26,12 @@
         <div class="hero-card">
           <div class="hero-logo-wrap"><img src="assets/logo-kanji.png" class="hero-logo hero-wordmark" alt="駅伝 ロゴ" /></div>
           <h1 id="topTitle" class="top-title-hidden">駅伝タイム計測</h1>
-          <p class="hero-en">Ekiden Timer</p>
+          <p class="hero-en">Ekiden</p>
           <p class="hero-subcopy">大会運営・計測・お知らせをひとつに。</p>
+          <div class="top-countdowns" aria-label="大会日程">
+            <div class="countdown-card event"><small>大会まで</small><strong id="eventCountdown">日程未設定</strong><span id="eventDateLabel"></span></div>
+            <div class="countdown-card entry"><small>申し込み終了まで</small><strong id="entryCountdown">締切未設定</strong><span id="entryDeadlineLabel"></span></div>
+          </div>
         </div>
 
         <div class="role-buttons" aria-label="利用する画面を選択">
@@ -49,6 +53,10 @@
             <span class="role-arrow">›</span>
           </button>
         </div>
+        <section id="topImportantSection" class="top-important hidden" aria-labelledby="topImportantTitle">
+          <div class="top-important-head"><div><small>IMPORTANT</small><strong id="topImportantTitle">重要なお知らせ</strong></div><button class="top-important-link" data-go="participant">すべて見る ›</button></div>
+          <div id="topImportantNotices" class="top-important-list"></div>
+        </section>
         <div class="top-surface" aria-hidden="true">
           <span class="surface-orb orb-a"></span>
           <span class="surface-orb orb-b"></span>
@@ -194,6 +202,7 @@
             <div class="form-grid two admin-form-grid">
               <label>大会名<input id="settingEventName" /></label>
               <label>開催日<input id="settingEventDate" type="date" /></label>
+              <label>申込締切日<input id="settingEntryDeadline" type="date" /></label>
               <label>会場<input id="settingVenue" /></label>
               <label>事務局連絡先<input id="settingContact" /></label>
             </div>
