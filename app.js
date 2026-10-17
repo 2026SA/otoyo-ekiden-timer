@@ -26,7 +26,7 @@ let pendingQueue = loadQueue();
 
 function freshState(){
   return {
-    meta:{ raceStatus:'before', startAt:null, finishAt:null, notice:DEFAULT_NOTICE, version:5 },
+    meta:{ raceStatus:'before', startAt:null, finishAt:null, notice:DEFAULT_NOTICE, version:6 },
     settings:{ eventName:'大豊学園駅伝大会', eventDate:'', entryDeadline:'', venue:'大豊学園', contact:'大会事務局', entryOpen:true },
     applications:{},
     teams:{},
@@ -133,8 +133,9 @@ function renderNoticeBoardAdmin(){
 function renderParticipantNotices(){
   const el=document.getElementById('participantNoticeBoard'); if(!el)return;
   const rows=noticeList(false).filter(n=>n.visible!==false);
+  const count=document.getElementById('participantNoticeCount'); if(count)count.textContent=`${rows.length}件`;
   if(!rows.length){el.innerHTML='<div class="notice-empty">現在、お知らせはありません。</div>';return;}
-  el.innerHTML=rows.map(n=>`<div class="notice-card ${n.pinned?'pinned':''}"><div class="notice-card-head"><div><div class="notice-card-title">${esc(n.title||'大会からのお知らせ')}</div><div class="notice-tags"><span class="notice-tag audience">${esc(audienceLabel(n.audience))}</span><span class="notice-tag ${n.priority==='important'?'important':''}">${esc(priorityLabel(n.priority))}</span>${n.pinned?'<span class="notice-tag pinned">固定</span>':''}</div></div><div class="notice-card-meta">${esc(fmtNoticeTime(n.updatedAt||n.createdAt))}</div></div><div class="notice-body">${esc(n.body||'').replace(/\n/g,'<br>')}</div></div>`).join('');
+  el.innerHTML=rows.map(n=>`<details class="participant-notice-item ${n.priority==='important'?'important':''} ${n.pinned?'pinned':''}"><summary><div class="participant-notice-summary-main"><div class="notice-card-title">${esc(n.title||'大会からのお知らせ')}</div><div class="notice-tags"><span class="notice-tag audience">${esc(audienceLabel(n.audience))}</span><span class="notice-tag ${n.priority==='important'?'important':''}">${esc(priorityLabel(n.priority))}</span>${n.pinned?'<span class="notice-tag pinned">固定</span>':''}</div></div><div class="participant-notice-summary-side"><span>${esc(fmtNoticeTime(n.updatedAt||n.createdAt))}</span><b class="disclosure-mark">＋</b></div></summary><div class="participant-notice-body">${esc(n.body||'').replace(/\n/g,'<br>')}</div></details>`).join('');
 }
 
 async function sha256(text){
@@ -363,7 +364,7 @@ function initEntryRows(){
   const body=document.getElementById('entryRunnerRows'); if(!body||body.children.length)return;
   const sexOpts=['男','女','回答しない'].map(v=>`<option>${v}</option>`).join('');
   const ageOpts=AGE_GROUPS.map(v=>`<option>${v}</option>`).join('');
-  body.innerHTML=Array.from({length:15},(_,i)=>`<tr data-entry-leg="${i+1}"><td>${i+1}</td><td><input data-runner-name maxlength="60" placeholder="走者氏名" /></td><td><select data-runner-sex>${sexOpts}</select></td><td><select data-runner-group>${ageOpts}</select></td><td><input data-runner-age inputmode="numeric" type="number" min="1" max="100" placeholder="任意" /></td></tr>`).join('');
+  body.innerHTML=Array.from({length:15},(_,i)=>`<tr data-entry-leg="${i+1}"><td data-label="区間" class="runner-leg"><span class="runner-leg-label">第${i+1}区間</span><span class="runner-leg-number">${i+1}</span></td><td data-label="氏名"><input data-runner-name maxlength="60" placeholder="走者氏名" /></td><td data-label="性別"><select data-runner-sex>${sexOpts}</select></td><td data-label="区分"><select data-runner-group>${ageOpts}</select></td><td data-label="年齢"><input data-runner-age inputmode="numeric" type="number" min="1" max="100" placeholder="任意" /></td></tr>`).join('');
 }
 function renderEntry(){
   initEntryRows();
@@ -596,7 +597,15 @@ document.getElementById('teamLogoutBtn').addEventListener('click',async()=>{awai
 
 // ---------- Participant ----------
 function renderParticipant(){
-  renderParticipantNotices();const ranking=teamList().map(t=>({team:t,legs:teamProgress(t.teamNo),total:teamTotal(t.teamNo)})).sort((a,b)=>b.legs-a.legs||((a.total??Infinity)-(b.total??Infinity))||naturalCompare(a.team.teamNo,b.team.teamNo));const el=document.getElementById('rankingTable');if(!ranking.length){el.innerHTML='<div class="empty-state">まだチームが登録されていません。</div>';return;}el.innerHTML=ranking.map((r,i)=>`<div class="rank-row"><div class="rank-num">${i+1}位</div><div><div class="rank-team">${esc(r.team.teamName)}</div><div class="rank-meta">チーム ${esc(r.team.teamNo)}</div></div><div class="rank-meta">${r.legs===0?'未通過':r.legs>=15?'FINISH':`第${r.legs}区間`}</div><div class="rank-time">${r.total!=null?fmtClock(r.total):'--:--'}</div></div>`).join('');
+  renderParticipantNotices();
+  const ranking=teamList().map(t=>({team:t,legs:teamProgress(t.teamNo),total:teamTotal(t.teamNo),passes:passesForTeam(t.teamNo)})).sort((a,b)=>b.legs-a.legs||((a.total??Infinity)-(b.total??Infinity))||naturalCompare(a.team.teamNo,b.team.teamNo));
+  const el=document.getElementById('participantTeamList'); if(!el)return;
+  if(!ranking.length){el.innerHTML='<div class="empty-state">まだチームが登録されていません。</div>';return;}
+  el.innerHTML=ranking.map((r,i)=>{
+    const progress=r.legs===0?'未通過':r.legs>=15?'FINISH':`第${r.legs}区間`;
+    const records=r.passes.length?r.passes.map(p=>{const runner=runnerFor(p.teamNo,p.leg)||{};return `<div class="team-record-row"><span class="record-leg">第${p.leg}区間</span><span class="record-runner">${esc(runner.name||'走者未登録')}</span><span class="record-lap">${fmtClock(lapTime(p))}</span><span class="record-total">累積 ${state.meta.startAt?fmtClock(p.officialAt-state.meta.startAt):'--:--'}</span></div>`;}).join(''):'<div class="team-record-empty">まだ通過記録はありません。</div>';
+    return `<details class="participant-team-item"><summary><div class="team-rank-badge">${i+1}<small>位</small></div><div class="team-summary-name"><strong>${esc(r.team.teamName)}</strong><span>チーム ${esc(r.team.teamNo)}</span></div><div class="team-summary-progress"><span>${progress}</span><strong>${r.total!=null?fmtClock(r.total):'--:--'}</strong></div><b class="disclosure-mark">＋</b></summary><div class="team-record-body">${records}</div></details>`;
+  }).join('');
 }
 
 // ---------- Demo / reset / export ----------

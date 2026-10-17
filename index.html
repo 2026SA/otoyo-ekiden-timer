@@ -34,17 +34,10 @@
           </div>
         </div>
 
-        <div class="role-buttons" aria-label="利用する画面を選択">
-          <button class="role-button admin" data-go="admin-login">
-            <span class="role-icon">⚙</span><span class="role-copy"><strong>管理者</strong><small>大会設定・記録確認</small></span><span class="role-arrow">›</span>
-          </button>
-          <button class="role-button timer" data-go="timer-login">
-            <span class="role-icon">⏱</span><span class="role-copy"><strong>計測係</strong><small>運営計測・チーム参考計測</small></span><span class="role-arrow">›</span>
-          </button>
-          <button class="role-button participant" data-go="participant">
-            <span class="role-icon image-icon"><img src="assets/participant-icon.png" alt="" /></span><span class="role-copy"><strong>参加者・閲覧者</strong><small>リアルタイム順位・お知らせ</small></span><span class="role-arrow">›</span>
-          </button>
-        </div>
+        <section id="topImportantSection" class="top-important hidden" aria-labelledby="topImportantTitle">
+          <div class="top-important-head"><div><small>IMPORTANT</small><strong id="topImportantTitle">重要なお知らせ</strong></div><button class="top-important-link" data-go="participant">すべて見る ›</button></div>
+          <div id="topImportantNotices" class="top-important-list"></div>
+        </section>
 
         <div class="entry-cta-wrap">
           <button class="entry-cta" data-go="entry">
@@ -53,10 +46,18 @@
             <span class="role-arrow">›</span>
           </button>
         </div>
-        <section id="topImportantSection" class="top-important hidden" aria-labelledby="topImportantTitle">
-          <div class="top-important-head"><div><small>IMPORTANT</small><strong id="topImportantTitle">重要なお知らせ</strong></div><button class="top-important-link" data-go="participant">すべて見る ›</button></div>
-          <div id="topImportantNotices" class="top-important-list"></div>
-        </section>
+
+        <div class="role-buttons" aria-label="利用する画面を選択">
+          <button class="role-button participant" data-go="participant">
+            <span class="role-icon image-icon"><img src="assets/participant-icon.png" alt="" /></span><span class="role-copy"><strong>参加者・閲覧者</strong><small>お知らせ・チーム記録</small></span><span class="role-arrow">›</span>
+          </button>
+          <button class="role-button timer" data-go="timer-login">
+            <span class="role-icon">⏱</span><span class="role-copy"><strong>計測係</strong><small>運営計測・チーム参考計測</small></span><span class="role-arrow">›</span>
+          </button>
+          <button class="role-button admin" data-go="admin-login">
+            <span class="role-icon">⚙</span><span class="role-copy"><strong>管理者</strong><small>大会設定・記録確認</small></span><span class="role-arrow">›</span>
+          </button>
+        </div>
         <div class="top-surface" aria-hidden="true">
           <span class="surface-orb orb-a"></span>
           <span class="surface-orb orb-b"></span>
@@ -317,12 +318,24 @@
 
       <!-- PARTICIPANT -->
       <section id="screen-participant" class="screen participant-screen">
-        <article class="panel ranking-panel">
-          <div class="ranking-head"><div><small>リアルタイム</small><h2>速報順位</h2></div><span class="refresh-dot">● LIVE</span></div>
-          <div id="rankingTable" class="ranking-table"></div>
+        <article class="panel notice-panel participant-section">
+          <div class="participant-section-head">
+            <div><small>INFORMATION</small><h2>お知らせ</h2></div>
+            <span id="participantNoticeCount" class="section-count">0件</span>
+          </div>
+          <p class="participant-guide">見たいお知らせをタップすると内容が開きます。</p>
+          <div id="participantNoticeBoard" class="notice-board participant collapsible-board"></div>
+        </article>
+
+        <article class="panel team-record-panel participant-section">
+          <div class="participant-section-head team-head">
+            <div><small>LIVE RESULTS</small><h2>チーム・記録</h2></div>
+            <span class="refresh-dot">● LIVE</span>
+          </div>
+          <p class="participant-guide">チーム名をタップすると区間ごとの記録を確認できます。</p>
+          <div id="participantTeamList" class="participant-team-list"></div>
           <p class="provisional-note">※速報値です。正式結果は記録確認後に確定します。</p>
         </article>
-        <article class="panel notice-panel"><div class="notice-title">📣 お知らせ掲示板</div><div id="participantNoticeBoard" class="notice-board participant"></div></article>
       </section>
     </main>
 
